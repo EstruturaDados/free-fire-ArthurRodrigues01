@@ -16,7 +16,9 @@ typedef struct Item {
 bool rmItem(Item backpack[], int* size, char* itemName);
 void cleanInputBuffer();
 void printActionMenu(int* option, int size);
+void printFindItemMenu(char* itemName);
 void printInsertItemMenu(Item* temp);
+void printItem(Item backpack[], int size, char* itemName);
 void printList(Item backpack[], int size);
 void printRemoveItemMenu(char* itemName);
 void push(Item backpack[], int* size, Item newItem);
@@ -28,7 +30,7 @@ int main() {
   
   Item temp; // Usado para capturar dados do menu
   int option;
-  char nameToRemove[MAX_NAME_LEN];
+  char tempName[MAX_NAME_LEN];
 
   do {
     printActionMenu(&option, itemCount); 
@@ -43,29 +45,40 @@ int main() {
         printInsertItemMenu(&temp);
         push(backpack, &itemCount, temp);
         printf("\nItem inserido com sucesso!\n");
+        printList(backpack, itemCount);
         break;
-      case 2:
+        case 2:
         if (itemCount == 0) {
           printf("\nMochila vazia!\n");
           break;
         }
         
-        printRemoveItemMenu(nameToRemove);
-        if (rmItem(backpack, &itemCount, nameToRemove)) {
+        printRemoveItemMenu(tempName);
+        if (rmItem(backpack, &itemCount, tempName)) {
           printf("\nItem removido com sucesso!\n");
-          break;
+        } else {          
+          printf("\nItem nao encontrado!\n");
         }
 
-        printf("\nItem nao encontrado!\n");
+        printList(backpack, itemCount);
         break;
       case 3:
         printList(backpack, itemCount);
+        break;
+      case 4:
+        if (itemCount == 0) {
+          printf("\nMochila vazia!\n");
+          break;
+        }
+
+        printFindItemMenu(tempName);
+        printItem(backpack, itemCount, tempName);
         break;
       case 0:
         printf("\nSaindo...\n");
         break;
       default:
-        if (option < 0 || option > 3) {
+        if (option < 0 || option > 4) {
           printf("\nPor favor, escolha uma opcao valida!\n");
         }
     }
@@ -138,14 +151,22 @@ void printActionMenu(int* option, int size) {
   printf("      MOCHILA DE SOBREVIVENCIA  \n");
   printf("==================================\n");
   printf("Capacidade: %d/%d\n\n", size, MAX_BACKPACK_CAP);
-  printf("1 - Adicionar Item\n2 - Remover Item\n3 - Listar Itens\n0 - Sair\n");
+  printf("1 - Adicionar Item\n2 - Remover Item\n3 - Listar Itens\n4 - Buscar item\n0 - Sair\n");
   printf("Escolha uma opcao: ");
   scanf("%d", option);
   cleanInputBuffer();
 }
 
 void printRemoveItemMenu(char* itemName) {
-  printf("\nNome do Item para remover: ");
+  printf("\n--- Remover Item ---\n");
+  printf("Nome do Item: ");
+  fgets(itemName, MAX_NAME_LEN, stdin);
+  itemName[strcspn(itemName, "\n")] = 0;
+}
+
+void printFindItemMenu(char* itemName) {
+  printf("\n--- Encontrar Item ---\n");
+  printf("Nome do Item: ");
   fgets(itemName, MAX_NAME_LEN, stdin);
   itemName[strcspn(itemName, "\n")] = 0;
 }
@@ -153,4 +174,19 @@ void printRemoveItemMenu(char* itemName) {
 void cleanInputBuffer() {
   int c;
   while ((c = getchar()) != '\n' && c != EOF);
+}
+
+void printItem(Item backpack[], int size, char* itemName) {
+  for (int i = 0; i < size; i++) {
+    if (strcmp(backpack[i].name, itemName) == 0) {
+      printf("\n----------------------------------------------------------\n");
+      printf("%-29s | %-19s | %s\n", "NOME", "TIPO", "QUANTIDADE");
+      printf("----------------------------------------------------------\n");
+  
+      printf("%-29s | %-19s | %d\n", backpack[i].name, backpack[i].type, backpack[i].quant);
+      return;
+    }
+  }
+
+  printf("\nItem nao encontrado\n");
 }
